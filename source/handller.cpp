@@ -24,6 +24,30 @@ handller::handller() {
 	resourceCmp["jfif"] = " image/jpeg";
 }
 
+void context::setCookie(std::string key, std::string value, std::string path, std::string domain, bool isHttpOnly) {
+	CorreHeader += "Set-Cookie: ";
+	CorreHeader += key + "=" + value + ";";
+	CorreHeader += "path=" + path + ";";
+	CorreHeader += "domain" + domain + ";";
+	//time?
+	if (isHttpOnly)
+		CorreHeader += " HttpOnly";
+	CorreHeader += "\r\n";
+}
+
+std::string context::getCookie(std::string key) {
+	int loc = originalText.find(key);
+	if (loc == std::string::npos) {
+		return "";
+	}
+	loc += 1 + key.size();
+	std::string ans = "";
+	while (originalText[loc] != '\r') {
+		ans += originalText[loc++];
+	}
+	return ans;
+}
+
 std::string context::fromData(std::string name) {
 	int loc = originalText.find(name);
 	if (loc == std::string::npos) {
@@ -38,40 +62,42 @@ std::string context::fromData(std::string name) {
 }
 
 void context::HTML(int type, std::string fUrl) {
-	con += "HTTP/1.0 ";
-	con += intToStr(type) + " ";
+	CorreLine += "HTTP/1.0 ";
+	CorreLine += intToStr(type) + " ";
 	if (type == 200) {
-		con += "OK\r\n";
+		CorreLine += "OK";
 	}
-	con += "Content-Type: text/html\r\n";
-	con += "Connection: keep-alive\r\n";
-	con += "Content-Length: ";
+	CorreHeader += "Content-Type: text/html\r\n";
+	CorreHeader += "Connection: keep-alive\r\n";
+	CorreHeader += "Content-Length: ";
 	std::ifstream ifs(fUrl);
 	std::string tmp((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
-	con += intToStr(tmp.size()) + "\r\n\r\n";
-	con += tmp;
+	CorreHeader += intToStr(tmp.size()) + "\r\n";
+	CorreText += tmp;
 }
 
 context::context(std::string ori) :originalText(ori) {
-	con = "";
+	CorreLine = "";
+	CorreHeader = "";
+	CorreText = "";
 }
 
 void context::JSON(int type, json& js) {
-	con += "HTTP/1.0 ";
-	con += intToStr(type) + " ";
+	CorreLine += "HTTP/1.1 ";
+	CorreLine += intToStr(type) + " ";
 	if (type == 200) {
-		con += "OK\r\n";
+		CorreLine += "OK";
 	}
-	con += "Content-Type: application/json\r\n";
-	con += "Connection: keep-alive\r\n";
-	con += "Content-Length: ";
-	con += intToStr(js.getSize());
-	con += "\r\n\r\n";
-	con += js.getTe();
+	CorreHeader += "Content-Type: application/json\r\n";
+	CorreHeader += "Connection: keep-alive\r\n";
+	CorreHeader += "Content-Length: ";
+	CorreHeader += intToStr(js.getSize());
+	CorreHeader += "\r\n";
+	CorreText += js.getTe();
 }
 
 std::string context::getCon() {
-	return con;
+	return CorreLine + "\r\n" + CorreHeader + "\r\n" + CorreText + "\r\n";
 }
 
 void handller::Get(std::string url, void (*profunc)(context*)) {
@@ -96,7 +122,7 @@ std::string handller::getResource(std::string fUrl) {
 			fUrl[i] = '\\';
 	};
 	if (fp == nullptr) {
-		con += "HTTP/1.0 ";
+		con += "HTTP/1.1 ";
 		con += intToStr(404) + " ";
 		con += "Not Found\r\n\r\n\r\n";
 		return con;
@@ -108,7 +134,7 @@ std::string handller::getResource(std::string fUrl) {
 	while (loc < fUrl.size()) {
 		type += fUrl[loc++];
 	}
-	con += "HTTP/1.0 ";
+	con += "HTTP/1.1 ";
 	con += intToStr(200) + " ";
 	con += "OK\r\n";
 	con += "Content-Type:" + resourceCmp[type] + "\r\n";
@@ -148,7 +174,7 @@ std::string handller::pars(char* msg, int size) {
 		std::string s = msg;
 		context* con = new context(msg);
 		if (getFunc[url] == nullptr) {
-			return "HTTP/1.0 404 Not Found\r\n\r\n\r\n";
+			return "HTTP/1.1 404 Not Found\r\n\r\n\r\n";
 		}
 		getFunc[url](con);
 		std::string c = con->getCon();
@@ -159,7 +185,7 @@ std::string handller::pars(char* msg, int size) {
 		std::string s = msg;
 		context* con = new context(msg);
 		if (postFunc[url] == nullptr) {
-			return "HTTP/1.0 404 Not Found\r\n\r\n\r\n";
+			return "HTTP/1.1 404 Not Found\r\n\r\n\r\n";
 		}
 		postFunc[url](con);
 		std::string c = con->getCon();
@@ -167,6 +193,6 @@ std::string handller::pars(char* msg, int size) {
 		return c;
 	}
 	else {
-		return "HTTP/1.0 404 Not Found\r\n\r\n\r\n";
+		return "HTTP/1.1 404 Not Found\r\n\r\n\r\n";
 	}
 }

@@ -38,6 +38,7 @@ void webInit::conversation(SOCKET msg) {
 		int size = 0;
 		size = recv(msg, szMessage, msgSize, 0);
 		szMessage[size] = '\0';
+		printf("%s\n", szMessage);
 		std::string con = handler.pars(szMessage, size);
 		if (con != "") {
 			int type = send(msg, con.c_str(), con.size(), 0);

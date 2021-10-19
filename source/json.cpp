@@ -1,22 +1,7 @@
 #include "json.h"
 
-json::json(int size, ...) {
-	con = "{";
-	va_list va_ptr;
-	va_start(va_ptr, size);
-	for (int i = 0; i < size; i += 2) {
-		char* k = va_arg(va_ptr, char*);
-		std::string key(k);
-		char* val = va_arg(va_ptr, char*);
-		std::string value(val);
-		con += "\"";
-		con += key + "\":";
-		con += value;
-		if (i != size - 2) {
-			con += ",";
-		}
-	}
-	con += "}";
+void json::init() {
+	return;
 }
 
 int json::getSize() {
@@ -25,4 +10,59 @@ int json::getSize() {
 
 std::string json::getTe() {
 	return con;
+}
+
+std::string json::typeToStr(std::string t) {
+	std::string c("\"");
+	c += t;
+	c += "\"";
+	return std::string(c);
+}
+
+std::string json::typeToStr(int t) {
+	std::string c(std::to_string(t));
+	return c;
+}
+
+std::string json::typeToStr(const char* t) {
+	std::string c("\"");
+	c += t;
+	c += "\"";
+	return c;
+}
+
+std::string json::typeToStr(double t) {
+	std::string c(std::to_string(t));
+	return c;
+}
+
+std::string json::typeToStr(std::vector<int> t) {
+	std::string c = "";
+	c += "[";
+	for (int i = 0; i < t.size(); i++) {
+		c += typeToStr(t[i]);
+		c += ",";
+	}
+	c.pop_back();
+	c += "]";
+	return c;
+}
+
+std::string json::typeToStr(std::vector<std::string> t) {
+	std::string c = "";
+	c += "[";
+	for (int i = 0; i < t.size(); i++) {
+		c += typeToStr(t[i]);
+		c += ",";
+	}
+	c.pop_back();
+	c += "]";
+	return c;
+}
+
+std::string json::typeToStr(bool t) {
+	if (t)
+		return "true";
+	else
+		return "false";
 }

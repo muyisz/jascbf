@@ -97,7 +97,7 @@ void context::JSON(int type, json& js) {
 }
 
 std::string context::getCon() {
-	return CorreLine + "\r\n" + CorreHeader + "\r\n" + CorreText + "\r\n";
+	return CorreLine + "\r\n" + CorreHeader + "\r\n" + CorreText;
 }
 
 void handller::Get(std::string url, void (*profunc)(context*)) {
@@ -190,6 +190,7 @@ std::string handller::pars(char* msg, int size) {
 		postFunc[url](con);
 		std::string c = con->getCon();
 		delete con;
+		printf("%s\n", c.c_str());
 		return c;
 	}
 	else {

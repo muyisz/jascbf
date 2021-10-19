@@ -13,8 +13,8 @@
 #include <WinSock2.h>
 #pragma comment(lib,"ws2_32.lib")
 using HOST = int;
-extern class threadPool;
 
+extern class threadPool;
 const int msgSize = 10240;
 
 class webInit

@@ -10,10 +10,14 @@ public:
 	context(std::string orig);
 	void HTML(int, std::string);
 	void JSON(int, json&);
+	void setCookie(std::string, std::string, std::string, std::string, bool);
+	std::string getCookie(std::string);
 	std::string getCon();
 	std::string fromData(std::string);
 private:
-	std::string con;
+	std::string CorreLine;
+	std::string CorreHeader;
+	std::string CorreText;
 	std::string originalText;
 };
 
